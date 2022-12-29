@@ -4,7 +4,7 @@ import moviepy.editor
 
 
 def start(message, fs_videos, fs_mp3s, channel):
-    message = json.loads(message);
+    message = json.loads(message)
 
     tf = tempfile.NamedTemporaryFile()
     out = fs_videos.get(ObjectId(message["video_fid"]))
@@ -14,6 +14,7 @@ def start(message, fs_videos, fs_mp3s, channel):
 
     tf_path = tempfile.gettempdir() + f"/{message['video_fid']}.mp3"
     audio.write_audiofile(tf_path)
+
     f = open(tf_path, "rb")
     data = f.read()
     fid = fs_mp3s.put(data)
@@ -21,12 +22,13 @@ def start(message, fs_videos, fs_mp3s, channel):
     os.remove(tf_path)
 
     message["mp3_fid"] = str(fid)
+
     try:
         channel.basic_publish(
-            exchange = "",
+            exchange="",
             routing_key=os.environ.get("MP3_QUEUE"),
-            body = json.dump(message),
-            properties = pika.BasicProperties( 
+            body=json.dumps(message),
+            properties=pika.BasicProperties(
                 delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
             ),
         )
